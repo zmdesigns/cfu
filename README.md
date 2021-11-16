@@ -2,11 +2,12 @@
 
 ## Description
 
-Checks for updates to webpages, sends a telegram message with the url if the website is updated. Once configured, set it up as a cronjob and get notified whenever a webpage is updated!
+Python script that checks for textual updates to webpages, sends a telegram message with the url if the website is updated. Once configured, set it up as a cronjob and get notified whenever a webpage is updated!
 
 ## Future Updates
 
 - Add different ways of being updated (Email, logfile).
+- Ability to choose to be updated when script,style or a specific divs are updated
 - Have an option to display what has updated
 - Crawl a website and check for updates accross entire site
 
@@ -14,8 +15,8 @@ Checks for updates to webpages, sends a telegram message with the url if the web
 
 ### Telegram
 
-You'll need to register a bot in telegram. Just message [BotFather](https://t.me/botfather) and follow the prompts.
-Second, you'll need to obtain a chat id to send the messages to. To find your chat id message [RawDataBot](https://t.me/rawdatabot). The bot will respond with some JSON data. Look for the 'chat' object and then 'id' property. That's your chat id.
+You'll need to register a bot in telegram. Just message [BotFather](https://t.me/botfather) and follow the prompts. The bot will respond with your new bot token.
+You'll also need to obtain a chat id to send the messages to. To find your chat id message [RawDataBot](https://t.me/rawdatabot). The bot will respond with some JSON data. Look for the 'chat' object and then 'id' property. That's your chat id.
 
 ### Configuration file
 
@@ -33,7 +34,7 @@ Where --name option describes the name you'd like to give the website and --url 
 
 `python3 cfu.py check`
 
-Checks all added webpages for updates since last run. I set this up as a cronjob to run every 15 minutes.
+Checks all webpages for any updates since last run.
 
 ## Help
 
