@@ -48,6 +48,11 @@ class Cfu(object):
 
     def update(self, sectionName, newHash):
         """ Update the hash value in config and send a message """
+        self.sendMessage(sectionName)
+        self.config[sectionName]['hash'] = newHash
+        self.writeConfig()
+
+    def sendMessage(self, sectionName):
         message = sectionName + ' has been updated!';
         if self.config['settings']['url_in_msg'] == 'yes':
             message += self.config[sectionName]['url']
@@ -57,15 +62,19 @@ class Cfu(object):
         bot = telebot.TeleBot(botToken)
         bot.send_message(chatId, message)
 
-        self.config[sectionName]['hash'] = newHash
-        self.writeConfig()
-
     def add(self, name, url):
         """ Add a website to config """
         hashValue = getHash(url)
         self.config[name] = {'url': url, 'hash': hashValue}
         self.writeConfig()
 
+    def check(self, name):
+        """ Compare value stored from last check to live, if it's different, it's updated """
+        url = self.config[name]['url']
+        value = self.config[name]['value']
+        newValue = getHash(url)
+        if newValue != value:
+            self.update(name, newValue)
 
 @click.group()
 @click.pass_context
@@ -107,12 +116,7 @@ def check(cfu):
             if 'url' not in cfu.config[section]:
                 continue
 
-            url = cfu.config[section]['url']
-            hashValue = cfu.config[section]['hash']
-            newHash = getHash(url)
-
-            if newHash != hashValue:
-                cfu.update(section, newHash)
+            cfu.check(section)
 
 if __name__ == '__main__':
     cli()
