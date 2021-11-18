@@ -26,15 +26,15 @@ Starts an interactive prompt that will request your bot token, chat id, and if y
 
 ## Add webpages
 
-`python3 cfu.py add --name "Google" --url "https://google.com"`
+`python3 cfu.py add`
 
-Where --name option describes the name you'd like to give the website and --url is the site. cfu will now check for updates to this website whenever check command is executed
+Starts an interactive prompt that will request the name of the website, url, and the way you'd like the script to store the value of the website (hash is the only implemented option currently).
 
 ## Check for updates
 
 `python3 cfu.py check`
 
-Checks all webpages for any updates since last run.
+Checks all added webpages for any updates since last run.
 
 ## Help
 
