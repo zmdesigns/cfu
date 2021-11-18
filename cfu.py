@@ -11,7 +11,7 @@ import os
 import click
 import configparser
 
-def getHash(url):
+def getTextContent(url):
     soup = bs(urlopen(url),features="lxml")
     textContent = ''
 
@@ -22,9 +22,13 @@ def getHash(url):
         textContent += div_tag.getText()
 
     textContent = " ".join(textContent.split())
-    hashValue = hashlib.md5(textContent.encode("utf-8")).hexdigest()
+    return textContent
 
+def getHash(url):
+    textContent = getTextContent(url)
+    hashValue = hashlib.md5(textContent.encode("utf-8")).hexdigest()
     return hashValue
+    
 
 class Cfu(object):
     def __init__(self):
@@ -67,6 +71,11 @@ class Cfu(object):
         value = ''
         if vtype == 'hash':
             value = getHash(url)
+        if vtype == 'full':
+            textContents = getTextContent(url)
+            value = name + '.txt'
+            with open(value, 'w') as f:
+                f.write(textContents)
 
         self.config[name] = {'url': url, 'value': value, 'value_type': vtype}
         self.writeConfig()
@@ -74,15 +83,25 @@ class Cfu(object):
     def check(self, name):
         """ Compare value stored from last check to live, if it's different, it's updated """
         url = self.config[name]['url']
-        value = self.config[name]['value']
-        value_type = self.config[name]['value_type']
-
+        value = ''
         newValue = ''
-        if value_type == 'hash':
+        valueType = self.config[name]['value_type']
+        
+        if valueType == 'hash':
+            value = self.config[name]['value']
             newValue = getHash(url)
 
-        if newValue != value:
-            self.update(name, newValue)
+            if newValue != value:
+                self.update(name, newValue)
+
+        elif valueType == 'full':
+            with open(self.config[name]['value'], 'r') as file:
+                textContents = file.read()
+            newTextContents = getTextContent(url)
+
+            if newTextContents != textContents:
+                self.update(name, self.config[name]['value'])
+        
 
 @click.group()
 @click.pass_context
