@@ -10,6 +10,7 @@ import telebot
 import os
 import click
 import configparser
+import difflib
 
 def getTextContent(url):
     soup = bs(urlopen(url),features="lxml")
@@ -53,8 +54,14 @@ class Cfu(object):
     def update(self, sectionName, newValue):
         """ Update the value in config and send a message """
         self.sendMessage(sectionName)
-        self.config[sectionName]['value'] = newValue
-        self.writeConfig()
+
+        if self.config[sectionName]['value_type'] == 'full':
+            filename = sectionName + '.txt'
+            with open(filename, 'w') as f:
+                f.write(newValue)
+        else:
+            self.config[sectionName]['value'] = newValue
+            self.writeConfig()
 
     def sendMessage(self, sectionName):
         message = sectionName + ' has been updated!';
@@ -90,17 +97,13 @@ class Cfu(object):
         if valueType == 'hash':
             value = self.config[name]['value']
             newValue = getHash(url)
-
-            if newValue != value:
-                self.update(name, newValue)
-
         elif valueType == 'full':
             with open(self.config[name]['value'], 'r') as file:
-                textContents = file.read()
-            newTextContents = getTextContent(url)
+                value = file.read()
+            newValue = getTextContent(url)
 
-            if newTextContents != textContents:
-                self.update(name, self.config[name]['value'])
+        if newValue != value:
+            self.update(name, newValue)
         
 
 @click.group()
