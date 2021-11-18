@@ -46,10 +46,10 @@ class Cfu(object):
         with open(self.configFilePath, 'w') as configFile:
             self.config.write(configFile)
 
-    def update(self, sectionName, newHash):
-        """ Update the hash value in config and send a message """
+    def update(self, sectionName, newValue):
+        """ Update the value in config and send a message """
         self.sendMessage(sectionName)
-        self.config[sectionName]['hash'] = newHash
+        self.config[sectionName]['value'] = newValue
         self.writeConfig()
 
     def sendMessage(self, sectionName):
@@ -62,17 +62,25 @@ class Cfu(object):
         bot = telebot.TeleBot(botToken)
         bot.send_message(chatId, message)
 
-    def add(self, name, url):
+    def add(self, name, url, vtype):
         """ Add a website to config """
-        hashValue = getHash(url)
-        self.config[name] = {'url': url, 'hash': hashValue}
+        value = ''
+        if vtype == 'hash':
+            value = getHash(url)
+
+        self.config[name] = {'url': url, 'value': value, 'value_type': vtype}
         self.writeConfig()
 
     def check(self, name):
         """ Compare value stored from last check to live, if it's different, it's updated """
         url = self.config[name]['url']
         value = self.config[name]['value']
-        newValue = getHash(url)
+        value_type = self.config[name]['value_type']
+
+        newValue = ''
+        if value_type == 'hash':
+            newValue = getHash(url)
+
         if newValue != value:
             self.update(name, newValue)
 
@@ -83,8 +91,8 @@ def cli(ctx):
     ctx.obj = Cfu()
 
 @cli.command("setup")
-@click.option("--bottoken", prompt="Enter Telegram bot token: ")
-@click.option("--chatid", prompt="Enter Telegram chat id: ")
+@click.option("--bottoken", prompt="Telegram bot token: ")
+@click.option("--chatid", prompt="Telegram chat id: ")
 @click.option("--includeurl", prompt="Include URL in update messages? (yes/no): ", type=click.Choice(['yes', 'no'], case_sensitive=False))
 @click.pass_obj
 def setup(cfu, bottoken, chatid, includeurl):
@@ -92,16 +100,17 @@ def setup(cfu, bottoken, chatid, includeurl):
     cfu.setup(bottoken, chatid, includeurl)
 
 @cli.command("add")
-@click.option("--name", "-n", required=True)
-@click.option("--url", "-u", required=True)
+@click.option("--name", prompt="Your name for the website: ")
+@click.option("--url", prompt="Url: ")
+@click.option("--vtype", prompt="Type of storage/comparison (hash,full): ", type=click.Choice(['hash','full'], case_sensitive=False))
 @click.pass_obj
-def add(cfu, name, url):
+def add(cfu, name, url, vtype):
     """ Add a webpage to check for updates """
     if name in cfu.config:
         click.echo("A website by the name of " + name + " is already in use")
         return False
 
-    cfu.add(name, url)
+    cfu.add(name, url, vtype)
     
 @cli.command("check")
 @click.pass_obj
